@@ -1,5 +1,6 @@
 const BASE_URL = "https://auth-backend-1avv.onrender.com";
 
+
 // ================= SIGNUP =================
 const signupForm = document.getElementById("signupForm");
 
@@ -14,7 +15,6 @@ if (signupForm) {
 
         let isValid = true;
 
-        // Clear errors
         document.getElementById("nameError").textContent = "";
         document.getElementById("emailError").textContent = "";
         document.getElementById("passwordError").textContent = "";
@@ -64,6 +64,7 @@ if (signupForm) {
                 } else {
                     document.getElementById("emailError").textContent = data.message || "Signup failed";
                 }
+
             } catch (error) {
                 console.error(error);
                 alert("Server error");
@@ -100,13 +101,8 @@ if (loginForm) {
             const data = await res.json();
 
             if (res.ok && data.token) {
-                // Save auth data
+                // ✅ ONLY TOKEN
                 localStorage.setItem("token", data.token);
-                localStorage.setItem("isLoggedIn", "true");
-
-                if (data.user) {
-                    localStorage.setItem("currentUser", JSON.stringify(data.user));
-                }
 
                 window.location.href = "dashboard.html";
             } else {
@@ -122,28 +118,40 @@ if (loginForm) {
 
 
 // ================= DASHBOARD =================
-const usernameSpan = document.getElementById("username");
-const logoutBtn = document.getElementById("logoutBtn");
+const welcomeText = document.getElementById("welcomeText");
 
 if (usernameSpan) {
-    const isLoggedIn = localStorage.getItem("isLoggedIn");
-    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
 
-    if (!isLoggedIn || !currentUser) {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
         window.location.href = "login.html";
     } else {
-        usernameSpan.textContent = currentUser.name || "User";
+
+        // 🔥 Fetch real user from backend
+        fetch(`${BASE_URL}/api/auth/me`, {
+            headers: {
+                "Authorization": token
+            }
+        })
+        .then(res => res.json())
+        .then(user => {
+            welcomeText.textContent = `Welcome, ${user.name || "User"} 👋`;
+        })
+        .catch(() => {
+            localStorage.removeItem("token");
+            window.location.href = "login.html";
+        });
     }
 }
 
 
 // ================= LOGOUT =================
+const logoutBtn = document.getElementById("logoutBtn");
+
 if (logoutBtn) {
     logoutBtn.addEventListener("click", function () {
         localStorage.removeItem("token");
-        localStorage.removeItem("isLoggedIn");
-        localStorage.removeItem("currentUser");
-
         window.location.href = "login.html";
     });
 }
