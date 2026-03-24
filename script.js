@@ -101,7 +101,7 @@ if (loginForm) {
             const data = await res.json();
 
             if (res.ok && data.token) {
-                // ✅ ONLY TOKEN
+                // ✅ ONLY TOKEN (NO OLD SYSTEM)
                 localStorage.setItem("token", data.token);
 
                 window.location.href = "dashboard.html";
@@ -120,7 +120,7 @@ if (loginForm) {
 // ================= DASHBOARD =================
 const welcomeText = document.getElementById("welcomeText");
 
-if (usernameSpan) {
+if (welcomeText) {
 
     const token = localStorage.getItem("token");
 
@@ -128,7 +128,6 @@ if (usernameSpan) {
         window.location.href = "login.html";
     } else {
 
-        // 🔥 Fetch real user from backend
         fetch(`${BASE_URL}/api/auth/me`, {
             headers: {
                 "Authorization": token
