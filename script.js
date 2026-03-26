@@ -121,19 +121,22 @@ if (loginForm) {
 const welcomeText = document.getElementById("welcomeText");
 
 if (welcomeText) {
-
     const token = localStorage.getItem("token");
 
     if (!token) {
         window.location.href = "login.html";
     } else {
-
         fetch(`${BASE_URL}/api/auth/me`, {
             headers: {
-                "Authorization": token
+                "Authorization": `Bearer ${token}`
             }
         })
-        .then(res => res.json())
+        .then(res => {
+            if (!res.ok) {
+                throw new Error("Unauthorized");
+            }
+            return res.json();
+        })
         .then(user => {
             welcomeText.textContent = `Welcome, ${user.name || "User"} 👋`;
         })
