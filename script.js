@@ -126,17 +126,24 @@ if (welcomeText) {
     if (!token) {
         window.location.href = "login.html";
     } else {
-        // ✅ NO API CALL (temporary stable version)
-
-        // Get user name from token (simple decode)
-        try {
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            const userName = payload.name || "User";
-
-            welcomeText.textContent = `Welcome, ${userName} 👋`;
-        } catch (err) {
-            welcomeText.textContent = "Welcome 👋";
-        }
+        fetch(`${BASE_URL}/api/auth/me`, {
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        })
+        .then(res => {
+            if (!res.ok) {
+                throw new Error("Unauthorized");
+            }
+            return res.json();
+        })
+        .then(user => {
+            welcomeText.textContent = `Welcome, ${user.name} 👋`;
+        })
+        .catch(() => {
+            localStorage.removeItem("token");
+            window.location.href = "login.html";
+        });
     }
 }
 
